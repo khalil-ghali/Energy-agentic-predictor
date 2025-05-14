@@ -79,77 +79,89 @@
         <div id="results" class="mt-4"></div>
     </div>
 
-    <script>
-        let data = [];
+<script>
+    let data = [];
 
-        // Load the Excel file
-        function loadExcel() {
-            const url = 'Parallel-Sessions-Schedule.xlsx';
-            fetch(url)
-                .then(response => response.arrayBuffer())
-                .then(buffer => {
-                    const workbook = XLSX.read(buffer, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    data = XLSX.utils.sheet_to_json(sheet);
-                    console.log('Loaded data:', data); // Debugging log
-                })
-                .catch(error => console.error('Error loading Excel file:', error));
+    function loadExcel() {
+        const url = 'Parallel-Sessions-Schedule.xlsx';
+        fetch(url)
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                const workbook = XLSX.read(buffer, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                data = XLSX.utils.sheet_to_json(sheet);
+                console.log('Loaded data:', data);
+            })
+            .catch(error => console.error('Error loading Excel file:', error));
+    }
+
+    function search() {
+        const searchOption = document.getElementById('searchOption').value;
+        const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (data.length === 0 || !searchInput) {
+            resultsDiv.textContent = 'Please enter a search term.';
+            return;
         }
 
-// Search function
-        function search() {
-            const searchOption = document.getElementById('searchOption').value;
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            console.log('Search option:', searchOption, 'Search input:', searchInput); // Debugging log
+        // Match presenter and session chair roles
+        const presenterMatches = data.filter(item =>
+            item['Presenter'] && item['Presenter'].toLowerCase().includes(searchInput)
+        );
 
-            if (data.length === 0) {
-                console.error('No data loaded from the Excel file.');
-                return;
-            }
+        const sessionChairMatches = data.filter(item =>
+            item['Session Chair'] && item['Session Chair'].toLowerCase().includes(searchInput)
+        );
 
-            const results = data.filter(item => {
-                console.log('Inspecting item:', item); // Debugging log
-                return item[searchOption] && item[searchOption].toString().toLowerCase().includes(searchInput);
+        if (presenterMatches.length > 0) {
+            const presenterHeader = document.createElement('h3');
+            presenterHeader.textContent = '🎤 Presenter Schedule';
+            resultsDiv.appendChild(presenterHeader);
+            resultsDiv.appendChild(createTable(presenterMatches));
+        }
+
+        if (sessionChairMatches.length > 0) {
+            const chairHeader = document.createElement('h3');
+            chairHeader.textContent = '📋 Session Chair Schedule';
+            resultsDiv.appendChild(chairHeader);
+            resultsDiv.appendChild(createTable(sessionChairMatches));
+        }
+
+        if (presenterMatches.length === 0 && sessionChairMatches.length === 0) {
+            resultsDiv.textContent = 'No results found for this name.';
+        }
+    }
+
+    function createTable(entries) {
+        const table = document.createElement('table');
+        table.className = 'table table-striped';
+
+        const headerRow = document.createElement('tr');
+        Object.keys(entries[0]).forEach(key => {
+            const th = document.createElement('th');
+            th.textContent = key;
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        entries.forEach(entry => {
+            const row = document.createElement('tr');
+            Object.values(entry).forEach(value => {
+                const td = document.createElement('td');
+                td.textContent = value;
+                row.appendChild(td);
             });
+            table.appendChild(row);
+        });
 
-            displayResults(results);
-        }
+        return table;
+    }
 
-        // Display search results
-        function displayResults(results) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
+    window.onload = loadExcel;
+</script>
 
-            if (results.length > 0) {
-                const table = document.createElement('table');
-                table.className = 'table table-striped';
-                const headerRow = document.createElement('tr');
-                Object.keys(results[0]).forEach(key => {
-                    const th = document.createElement('th');
-                    th.textContent = key;
-                    headerRow.appendChild(th);
-                });
-                table.appendChild(headerRow);
-
-                results.forEach(result => {
-                    const row = document.createElement('tr');
-                    Object.values(result).forEach(value => {
-                        const td = document.createElement('td');
-                        td.textContent = value;
-                        row.appendChild(td);
-                    });
-                    table.appendChild(row);
-                });
-
-                resultsDiv.appendChild(table);
-            } else {
-                resultsDiv.textContent = 'No results found.';
-            }
-        }
-
-        // Load the Excel file on page load
-        window.onload = loadExcel;
-    </script>
 </body>
 </html>
