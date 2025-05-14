@@ -67,9 +67,9 @@
         <div class="form-group">
             <label for="searchOption">Search by:</label>
             <select id="searchOption" class="form-control">
-                <option value="Presenter">Presenter</option>
+                <option value="Presenter">Presenter Name</option>
                 <option value="Email">Email</option>
-                <option value="PaperID">PaperID</option>
+                <option value="PaperID">Paper ID</option>
             </select>
         </div>
         <div class="form-group">
@@ -97,43 +97,53 @@
     }
 
     function search() {
-        const searchOption = document.getElementById('searchOption').value;
-        const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
+    const searchOption = document.getElementById('searchOption').value;
+    const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
 
-        if (data.length === 0 || !searchInput) {
-            resultsDiv.textContent = 'Please enter a search term.';
-            return;
-        }
+    if (data.length === 0 || !searchInput) {
+        resultsDiv.textContent = 'Please enter a search term.';
+        return;
+    }
 
-        // Match presenter and session chair roles
-        const presenterMatches = data.filter(item =>
+    let presenterMatches = [];
+    let sessionChairMatches = [];
+
+    if (searchOption === 'PaperID') {
+        // Treat input and field as string or number
+        presenterMatches = data.filter(item =>
+            item['PaperID'] && item['PaperID'].toString().toLowerCase() === searchInput
+        );
+        // Session chair doesn’t apply to PaperID, skip
+    } else {
+        presenterMatches = data.filter(item =>
             item['Presenter'] && item['Presenter'].toLowerCase().includes(searchInput)
         );
-
-        const sessionChairMatches = data.filter(item =>
+        sessionChairMatches = data.filter(item =>
             item['Session Chair'] && item['Session Chair'].toLowerCase().includes(searchInput)
         );
-
-        if (presenterMatches.length > 0) {
-            const presenterHeader = document.createElement('h3');
-            presenterHeader.textContent = '🎤 Presenter Schedule';
-            resultsDiv.appendChild(presenterHeader);
-            resultsDiv.appendChild(createTable(presenterMatches));
-        }
-
-        if (sessionChairMatches.length > 0) {
-            const chairHeader = document.createElement('h3');
-            chairHeader.textContent = '📋 Session Chair Schedule';
-            resultsDiv.appendChild(chairHeader);
-            resultsDiv.appendChild(createTable(sessionChairMatches));
-        }
-
-        if (presenterMatches.length === 0 && sessionChairMatches.length === 0) {
-            resultsDiv.textContent = 'No results found for this name.';
-        }
     }
+
+    if (presenterMatches.length > 0) {
+        const presenterHeader = document.createElement('h3');
+        presenterHeader.textContent = '🎤 Presenter Schedule';
+        resultsDiv.appendChild(presenterHeader);
+        resultsDiv.appendChild(createTable(presenterMatches));
+    }
+
+    if (sessionChairMatches.length > 0) {
+        const chairHeader = document.createElement('h3');
+        chairHeader.textContent = '📋 Session Chair Schedule';
+        resultsDiv.appendChild(chairHeader);
+        resultsDiv.appendChild(createTable(sessionChairMatches));
+    }
+
+    if (presenterMatches.length === 0 && sessionChairMatches.length === 0) {
+        resultsDiv.textContent = 'No results found';
+    }
+}
+
 
     function createTable(entries) {
         const table = document.createElement('table');
