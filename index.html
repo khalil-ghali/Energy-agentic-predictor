@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Schedule Checker</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color: #fafaf7;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            color: #005A43;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .btn-primary {
+            background-color: #005A43;
+            border-color: #005A43;
+        }
+        .btn-primary:hover {
+            background-color: #223A7A;
+            border-color: #223A7A;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .banner, .logo {
+            width: 100%;
+            max-width: 850px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+        }
+        .logo {
+            max-width: 240.55px;
+            height: 170px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo Image -->
+        <img src="images/FAIM2024/Marketing Team Logo-Transparent.png" alt="Faimconference.org" class="logo">
+        <!-- Banner Image -->
+        <img src="images/FAIM2024/NYC & BU (2).gif" alt="NYC" class="banner">
+
+        <h1>Conference Schedule Checker</h1>
+        <div class="form-group">
+            <label for="searchOption">Search by:</label>
+            <select id="searchOption" class="form-control">
+                <option value="Presenter">Presenter</option>
+                <option value="Email">Email</option>
+                <option value="PaperID">PaperID</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Enter search term">
+        </div>
+        <button class="btn btn-primary" onclick="search()">Search</button>
+        <div id="results" class="mt-4"></div>
+    </div>
+
+    <script>
+        let data = [];
+
+        // Load the Excel file
+        function loadExcel() {
+            const url = 'https://khalil-ghali.github.io/Energy-agentic-predictor/Parallel-Sessions-Schedule.xlsx';
+            fetch(url)
+                .then(response => response.arrayBuffer())
+                .then(buffer => {
+                    const workbook = XLSX.read(buffer, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    data = XLSX.utils.sheet_to_json(sheet);
+                    console.log('Loaded data:', data); // Debugging log
+                })
+                .catch(error => console.error('Error loading Excel file:', error));
+        }
+
+// Search function
+        function search() {
+            const searchOption = document.getElementById('searchOption').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            console.log('Search option:', searchOption, 'Search input:', searchInput); // Debugging log
+
+            if (data.length === 0) {
+                console.error('No data loaded from the Excel file.');
+                return;
+            }
+
+            const results = data.filter(item => {
+                console.log('Inspecting item:', item); // Debugging log
+                return item[searchOption] && item[searchOption].toString().toLowerCase().includes(searchInput);
+            });
+
+            displayResults(results);
+        }
+
+        // Display search results
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (results.length > 0) {
+                const table = document.createElement('table');
+                table.className = 'table table-striped';
+                const headerRow = document.createElement('tr');
+                Object.keys(results[0]).forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+
+                results.forEach(result => {
+                    const row = document.createElement('tr');
+                    Object.values(result).forEach(value => {
+                        const td = document.createElement('td');
+                        td.textContent = value;
+                        row.appendChild(td);
+                    });
+                    table.appendChild(row);
+                });
+
+                resultsDiv.appendChild(table);
+            } else {
+                resultsDiv.textContent = 'No results found.';
+            }
+        }
+
+        // Load the Excel file on page load
+        window.onload = loadExcel;
+    </script>
+</body>
+</html>
