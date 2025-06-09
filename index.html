@@ -115,6 +115,7 @@
                     <img src="Marketing Team Logo-Transparent.png" alt="Faimconference.org" class="logo">
                 </a>
             </div>
+            
             <!-- Floor Plan Links -->
             <!--
             <div class="floor-plans">
@@ -134,6 +135,7 @@
             <select id="searchOption" class="form-control">
                 <option value="Presenter">Presenter Name</option>
                 <option value="PaperID">Paper ID</option>
+                <option value="Author">Author Name</option>
             </select>
         </div>
         <div class="form-group">
@@ -147,7 +149,7 @@
     let data = [];
 
     function loadExcel() {
-        const url = 'Parallel-Sessions-Schedule.xlsx';
+        const url = 'Updated_parallel_sessions.xlsx';
         fetch(url)
             .then(response => response.arrayBuffer())
             .then(buffer => {
@@ -161,60 +163,66 @@
     }
 
     function search() {
-    const searchOption = document.getElementById('searchOption').value;
-    const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '';
+        const searchOption = document.getElementById('searchOption').value;
+        const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
 
-    if (data.length === 0 || !searchInput) {
-        resultsDiv.textContent = 'Please enter a search term.';
-        return;
+        if (data.length === 0 || !searchInput) {
+            resultsDiv.textContent = 'Please enter a search term.';
+            return;
+        }
+
+        let matches = [];
+        let sessionChairMatches = [];
+
+        if (searchOption === 'PaperID') {
+            matches = data.filter(item =>
+                item['PaperID'] && item['PaperID'].toString().toLowerCase() === searchInput
+            );
+        } else if (searchOption === 'Presenter') {
+            matches = data.filter(item =>
+                item['Presenter'] && item['Presenter'].toLowerCase().includes(searchInput)
+            );
+            sessionChairMatches = data.filter(item =>
+                item['Session Chair'] && item['Session Chair'].toLowerCase().includes(searchInput)
+            );
+        } else if (searchOption === 'Author') {
+            matches = data.filter(item =>
+                item['AuthorsList'] &&
+                item['AuthorsList'].toLowerCase().split(',').map(a => a.trim()).includes(searchInput)
+            );
+        }
+
+        if (matches.length > 0) {
+            const header = document.createElement('h3');
+            header.textContent = searchOption === 'Author' ? 'Author Schedule' :
+                                 searchOption === 'Presenter' ? 'Presenter Schedule' :
+                                 'Results';
+            resultsDiv.appendChild(header);
+            resultsDiv.appendChild(createTable(matches, ['AuthorsList']));
+        }
+
+        if (sessionChairMatches.length > 0) {
+            const chairHeader = document.createElement('h3');
+            chairHeader.textContent = '📋 Session Chair Schedule';
+            resultsDiv.appendChild(chairHeader);
+            resultsDiv.appendChild(createTable(sessionChairMatches, ['AuthorsList']));
+        }
+
+        if (matches.length === 0 && sessionChairMatches.length === 0) {
+            resultsDiv.textContent = 'No results found';
+        }
     }
 
-    let presenterMatches = [];
-    let sessionChairMatches = [];
-
-    if (searchOption === 'PaperID') {
-        // Treat input and field as string or number
-        presenterMatches = data.filter(item =>
-            item['PaperID'] && item['PaperID'].toString().toLowerCase() === searchInput
-        );
-        // Session chair doesn't apply to PaperID, skip
-    } else {
-        presenterMatches = data.filter(item =>
-            item['Presenter'] && item['Presenter'].toLowerCase().includes(searchInput)
-        );
-        sessionChairMatches = data.filter(item =>
-            item['Session Chair'] && item['Session Chair'].toLowerCase().includes(searchInput)
-        );
-    }
-
-    if (presenterMatches.length > 0) {
-        const presenterHeader = document.createElement('h3');
-        presenterHeader.textContent = '🎤 Presenter Schedule';
-        resultsDiv.appendChild(presenterHeader);
-        resultsDiv.appendChild(createTable(presenterMatches));
-    }
-
-    if (sessionChairMatches.length > 0) {
-        const chairHeader = document.createElement('h3');
-        chairHeader.textContent = '📋 Session Chair Schedule';
-        resultsDiv.appendChild(chairHeader);
-        resultsDiv.appendChild(createTable(sessionChairMatches));
-    }
-
-    if (presenterMatches.length === 0 && sessionChairMatches.length === 0) {
-        resultsDiv.textContent = 'No results found';
-    }
-}
-
-
-    function createTable(entries) {
+    function createTable(entries, excludeColumns = []) {
         const table = document.createElement('table');
         table.className = 'table table-striped';
 
+        // Filter out excluded columns from headers
+        const headers = Object.keys(entries[0]).filter(key => !excludeColumns.includes(key));
         const headerRow = document.createElement('tr');
-        Object.keys(entries[0]).forEach(key => {
+        headers.forEach(key => {
             const th = document.createElement('th');
             th.textContent = key;
             headerRow.appendChild(th);
@@ -223,9 +231,9 @@
 
         entries.forEach(entry => {
             const row = document.createElement('tr');
-            Object.values(entry).forEach(value => {
+            headers.forEach(key => {
                 const td = document.createElement('td');
-                td.textContent = value;
+                td.textContent = entry[key];
                 row.appendChild(td);
             });
             table.appendChild(row);
