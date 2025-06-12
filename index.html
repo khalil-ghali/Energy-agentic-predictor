@@ -159,6 +159,15 @@
             <div id="authorWarning" class="alert alert-warning" style="display:none;">
                 Please input your full name as written in the submitted paper.
             </div>
+            <div id="authorInfo" class="alert alert-info" style="display:none;">
+                All special characters will be considered as their base character (e.g., all types of 'u' (ü, ú, û) will be considered as normal 'u').
+            </div>
+            <div id="presenterWarning" class="alert alert-info" style="display:none;">
+                All special characters will be considered as their base character (e.g., all types of 'u' (ü, ú, û) will be considered as normal 'u').
+            </div>
+            <div id="paperIdInfo" class="alert alert-info" style="display:none;">
+                All Paper IDs must be 4 digits. If your Paper ID is less than 4 digits, please add leading zeros (e.g., 42 should be entered as 0042).
+            </div>
             <button class="btn btn-primary" onclick="search()">Search</button>
         </div>
         <div id="results" class="mt-4"></div>
@@ -224,7 +233,7 @@
 
         if (sessionChairMatches.length > 0) {
             const chairHeader = document.createElement('h3');
-            chairHeader.textContent = 'Session Chair Schedule';
+            chairHeader.textContent = '📋 Session Chair Schedule';
             resultsDiv.appendChild(chairHeader);
             resultsDiv.appendChild(createTable(sessionChairMatches, ['AuthorsList']));
         }
@@ -271,16 +280,42 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchOption = document.getElementById('searchOption');
         const authorWarning = document.getElementById('authorWarning');
+        const authorInfo = document.getElementById('authorInfo');
+        const presenterWarning = document.getElementById('presenterWarning');
+        const paperIdInfo = document.getElementById('paperIdInfo');
         searchOption.addEventListener('change', function() {
             if (searchOption.value === 'Author') {
                 authorWarning.style.display = '';
+                authorInfo.style.display = '';
+                paperIdInfo.style.display = 'none';
             } else {
                 authorWarning.style.display = 'none';
+                authorInfo.style.display = 'none';
+            }
+            if (searchOption.value === 'Presenter') {
+                presenterWarning.style.display = '';
+                paperIdInfo.style.display = 'none';
+            } else {
+                presenterWarning.style.display = 'none';
+            }
+            if (searchOption.value === 'PaperID') {
+                paperIdInfo.style.display = '';
+            } else if (searchOption.value !== 'Author' && searchOption.value !== 'Presenter') {
+                paperIdInfo.style.display = 'none';
             }
         });
         // Initial check
         if (searchOption.value === 'Author') {
             authorWarning.style.display = '';
+            authorInfo.style.display = '';
+            paperIdInfo.style.display = 'none';
+        }
+        if (searchOption.value === 'Presenter') {
+            presenterWarning.style.display = '';
+            paperIdInfo.style.display = 'none';
+        }
+        if (searchOption.value === 'PaperID') {
+            paperIdInfo.style.display = '';
         }
     });
 
