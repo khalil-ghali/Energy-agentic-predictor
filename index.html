@@ -16,6 +16,7 @@
         h1 {
             color: #005A43;
             margin-bottom: 20px;
+            text-align: center;
         }
         table {
             width: 100%;
@@ -39,7 +40,7 @@
             border-color: #223A7A;
         }
         .container {
-            max-width: 900px;
+            max-width: 100%;
             margin: auto;
         }
         .banner, .logo {
@@ -103,6 +104,19 @@
                 justify-content: center;
             }
         }
+        .search-section {
+            max-width: 700px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .search-section .form-group,
+        .search-section #authorWarning,
+        .search-section .btn {
+            width: 100%;
+            max-width: 700px;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -130,21 +144,23 @@
         </div>
 
         <h1>FAIM Conference Schedule Checker</h1>
-        <div class="form-group">
-            <label for="searchOption">Search by:</label>
-            <select id="searchOption" class="form-control">
-                <option value="Presenter">Presenter Name</option>
-                <option value="PaperID">Paper ID</option>
-                <option value="Author">Author Name</option>
-            </select>
+        <div class="search-section">
+            <div class="form-group">
+                <label for="searchOption">Search by:</label>
+                <select id="searchOption" class="form-control">
+                    <option value="Presenter">Presenter Name</option>
+                    <option value="PaperID">Paper ID</option>
+                    <option value="Author">Author Name</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Enter search term">
+            </div>
+            <div id="authorWarning" class="alert alert-warning" style="display:none;">
+                Please input your full name as written in the submitted paper.
+            </div>
+            <button class="btn btn-primary" onclick="search()">Search</button>
         </div>
-        <div class="form-group">
-            <input type="text" id="searchInput" class="form-control" placeholder="Enter search term">
-        </div>
-        <div id="authorWarning" class="alert alert-warning" style="display:none;">
-            Please input your full name as written in the submitted paper.
-        </div>
-        <button class="btn btn-primary" onclick="search()">Search</button>
         <div id="results" class="mt-4"></div>
     </div>
 
