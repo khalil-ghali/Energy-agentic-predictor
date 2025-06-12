@@ -141,6 +141,9 @@
         <div class="form-group">
             <input type="text" id="searchInput" class="form-control" placeholder="Enter search term">
         </div>
+        <div id="authorWarning" class="alert alert-warning" style="display:none;">
+            Please input your full name as written in the submitted paper.
+        </div>
         <button class="btn btn-primary" onclick="search()">Search</button>
         <div id="results" class="mt-4"></div>
     </div>
@@ -218,9 +221,15 @@
     function createTable(entries, excludeColumns = []) {
         const table = document.createElement('table');
         table.className = 'table table-striped';
+        table.style.width = '100%';
+        table.style.tableLayout = 'auto';
 
-        // Filter out excluded columns from headers
-        const headers = Object.keys(entries[0]).filter(key => !excludeColumns.includes(key));
+        let headers = Object.keys(entries[0]).filter(key => !excludeColumns.includes(key));
+
+        if (headers.includes('Presenter') && entries[0]['AuthorsList']) {
+            headers = headers.map(h => h === 'Presenter' ? 'AuthorsList' : h);
+        }
+
         const headerRow = document.createElement('tr');
         headers.forEach(key => {
             const th = document.createElement('th');
@@ -241,6 +250,23 @@
 
         return table;
     }
+
+    // Show/hide author warning based on search option
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchOption = document.getElementById('searchOption');
+        const authorWarning = document.getElementById('authorWarning');
+        searchOption.addEventListener('change', function() {
+            if (searchOption.value === 'Author') {
+                authorWarning.style.display = '';
+            } else {
+                authorWarning.style.display = 'none';
+            }
+        });
+        // Initial check
+        if (searchOption.value === 'Author') {
+            authorWarning.style.display = '';
+        }
+    });
 
     window.onload = loadExcel;
 </script>
