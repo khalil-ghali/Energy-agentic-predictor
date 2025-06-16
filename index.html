@@ -298,6 +298,7 @@
             excludeColumns.push('Presenter');
         }
 
+        // Get all headers except excluded ones
         let headers = Object.keys(entries[0]).filter(key => !excludeColumns.includes(key));
 
         const headerRow = document.createElement('tr');
@@ -321,7 +322,7 @@
                     );
                     td.innerHTML = formattedAuthors.join(', ');
                 } else {
-                    td.textContent = entry[key];
+                    td.textContent = entry[key] || '';
                 }
                 row.appendChild(td);
             });
