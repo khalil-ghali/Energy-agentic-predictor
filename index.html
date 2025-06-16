@@ -117,6 +117,43 @@
             width: 100%;
             max-width: 700px;
         }
+        .download-section {
+            text-align: center;
+            margin: 20px auto;
+            max-width: 700px;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background-color: #005A43;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .download-btn:hover {
+            background-color: #223A7A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            color: white;
+            text-decoration: none;
+        }
+        .download-btn .download-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.2;
+        }
+        .download-btn .small-text {
+            font-size: 12px;
+            opacity: 0.9;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -144,6 +181,13 @@
         </div>
 
         <h1>FAIM Conference Schedule Checker</h1>
+        <div class="download-section">
+            <a href="Updated_parallel_sessions.pdf" download class="download-btn">
+                <div class="download-text">
+                    Download Master Schedule
+                </div>
+            </a>
+        </div>
         <div class="search-section">
             <div class="form-group">
                 <label for="searchOption">Search by:</label>
@@ -249,11 +293,12 @@
         table.style.width = '100%';
         table.style.tableLayout = 'auto';
 
-        let headers = Object.keys(entries[0]).filter(key => !excludeColumns.includes(key));
-
-        if (headers.includes('Presenter') && entries[0]['AuthorsList']) {
-            headers = headers.map(h => h === 'Presenter' ? 'AuthorsList' : h);
+        // Add Presenter to excludeColumns if not already there
+        if (!excludeColumns.includes('Presenter')) {
+            excludeColumns.push('Presenter');
         }
+
+        let headers = Object.keys(entries[0]).filter(key => !excludeColumns.includes(key));
 
         const headerRow = document.createElement('tr');
         headers.forEach(key => {
@@ -267,7 +312,17 @@
             const row = document.createElement('tr');
             headers.forEach(key => {
                 const td = document.createElement('td');
-                td.textContent = entry[key];
+                if (key === 'AuthorsList' && entry['Presenter']) {
+                    // Split authors list and bold the presenter's name
+                    const authors = entry['AuthorsList'].split(',').map(author => author.trim());
+                    const presenter = entry['Presenter'].trim();
+                    const formattedAuthors = authors.map(author => 
+                        author === presenter ? `<strong>${author}</strong>` : author
+                    );
+                    td.innerHTML = formattedAuthors.join(', ');
+                } else {
+                    td.textContent = entry[key];
+                }
                 row.appendChild(td);
             });
             table.appendChild(row);
