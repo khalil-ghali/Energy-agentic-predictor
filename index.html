@@ -264,6 +264,9 @@
                 item['AuthorsList'] &&
                 item['AuthorsList'].toLowerCase().split(',').map(a => a.trim()).includes(searchInput)
             );
+            sessionChairMatches = data.filter(item =>
+                item['Session Chair'] && item['Session Chair'].toLowerCase().includes(searchInput)
+            );
         }
 
         if (matches.length > 0) {
